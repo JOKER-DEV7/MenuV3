@@ -1,155 +1,175 @@
-local visible = false
-local tab = 4
-local toggles = {false, false}
-local sel = 0
-local tabs = {"الشخصية", "السيرفر", "الاسلحة", "المودز", "vrp", "cfw"}
-local mW = 0.28
-local mH = 0.35
-local hH = 0.07
-local tH = 0.04
-local fH = 0.03
+local menuVisible = true
+local currentTab = 4
+local currentOption = 1
+local menuX = 0.15
+local menuY = 0.25
+local menuWidth = 0.22
+
+local tabs = {"Self", "Server", "Weapons", "Mods", "vRP", "CFW"}
+local options = {
+    [1] = {"Godmode", "Invisible", "Heal Player"},
+    [2] = {"Teleport to Waypoint", "Clear Area", "Bring All"},
+    [3] = {"Give All Weapons", "Remove All Weapons", "Infinite Ammo"},
+    [4] = {"Destroy 1", "Destroy 2", "Open Player Inventory"},
+    [5] = {"Give Money", "Revive Player"},
+    [6] = {"Fix Vehicle", "Spawn Vehicle"}
+}
+
+local toggles = {
+    ["Destroy 1"] = false,
+    ["Destroy 2"] = false,
+    ["Godmode"] = false,
+    ["Invisible"] = false,
+    ["Infinite Ammo"] = false
+}
+
+local function DrawMenuText(text, x, y, scale, font, r, g, b, a, center)
+    SetTextFont(font)
+    SetTextProportional(0)
+    SetTextScale(0.0, scale)
+    SetTextColour(r, g, b, a)
+    SetTextDropShadow(0, 0, 0, 0, 255)
+    SetTextEdge(1, 0, 0, 0, 255)
+    SetTextDropShadow()
+    SetTextOutline()
+    if center then SetTextCentre(true) end
+    BeginTextCommandDisplayText("STRING")
+    AddTextComponentString(text)
+    EndTextCommandDisplayText(x, y)
+end
+
+local function DrawMenuRect(x, y, width, height, r, g, b, a)
+    DrawRect(x, y, width, height, r, g, b, a)
+end
+
+local function GetKeyboardInput(title)
+    DisplayOnscreenKeyboard(1, "FMMC_KEY_TIP8", "", "", "", "", "", 4)
+    while UpdateOnscreenKeyboard() == 0 do
+        Citizen.Wait(0)
+    end
+    if UpdateOnscreenKeyboard() == 1 then
+        return GetOnscreenKeyboardResult()
+    end
+    return nil
+end
+
+local function IsMouseInBounds(x, y, width, height, mouseX, mouseY)
+    return (mouseX >= x - width / 2 and mouseX <= x + width / 2 and mouseY >= y - height / 2 and mouseY <= y + height / 2)
+end
+
+local function HandleAction(optionName)
+    if toggles[optionName] ~= nil then
+        toggles[optionName] = not toggles[optionName]
+    end
+
+    if optionName == "Open Player Inventory" then
+        local targetId = GetKeyboardInput("Enter Player ID:")
+        if targetId and tonumber(targetId) then
+            TriggerServerEvent("inventory:server:OpenInventory", "player", tonumber(targetId))
+            TriggerServerEvent("ox_inventory:openInventory", "player", tonumber(targetId))
+        end
+    elseif optionName == "Destroy 1" then
+        if toggles["Destroy 1"] then
+            -- Injection logic
+        end
+    elseif optionName == "Destroy 2" then
+        if toggles["Destroy 2"] then
+            -- Injection logic
+        end
+    end
+end
 
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
 
-        if IsControlJustPressed(0, 212) or IsControlJustPressed(0, 167) then
-            visible = not visible
-            Citizen.Wait(200)
+        if IsControlJustPressed(0, 344) then
+            menuVisible = not menuVisible
         end
 
-        if visible then
-            local cx, cy = 0.5, 0.5
-            local hT = cy - mH/2
-            local hY = hT + hH/2
-            local tY = hT + hH + tH/2
-            local cTop = tY + tH/2
-            local fY = cy + mH/2 - fH/2
-            local tW = mW / #tabs
+        if menuVisible then
+            SetMouseCursorActiveThisFrame()
+            SetMouseCursorSprite(1)
 
-            DrawRect(cx, cy, mW, mH, 255, 255, 255, 255)
+            DisableControlAction(0, 1, true)
+            DisableControlAction(0, 2, true)
+            DisableControlAction(0, 24, true)
+            DisableControlAction(0, 25, true)
+            DisableControlAction(0, 142, true)
+            DisableControlAction(0, 257, true)
 
-            DrawRect(cx, hY, mW, hH, 240, 240, 240, 255)
+            local mouseX = GetControlNormal(2, 239)
+            local mouseY = GetControlNormal(2, 240)
+            local leftClick = IsDisabledControlJustPressed(0, 24)
 
-            for r = 0, 4 do
-                for c = 0, 12 do
-                    local px = cx - mW/2 + 0.012 + c * 0.028
-                    local py = hT + 0.008 + r * 0.013 + math.sin((c + r) * 0.8) * 0.003
-                    DrawRect(px + 0.014, py, 0.025, 0.001, 180, 180, 180, 80)
-                end
-            end
+            DrawMenuRect(menuX, menuY, menuWidth, 0.08, 255, 255, 255, 255)
+            DrawMenuText("JOKER V3", menuX, menuY - 0.03, 0.55, 1, 0, 174, 239, 255, true)
+            DrawMenuText("Scandlas", menuX, menuY, 0.32, 4, 40, 40, 40, 255, true)
+            DrawMenuRect(menuX, menuY + 0.04, menuWidth, 0.002, 0, 174, 239, 255)
 
-            SetTextFont(7)
-            SetTextScale(0.0, 0.45)
-            SetTextColour(0, 0, 0, 255)
-            SetTextCentre(true)
-            BeginTextCommandDisplayText("STRING")
-            AddTextComponentSubstringPlayerName("Five")
-            EndTextCommandDisplayText(cx - 0.02, hT + 0.012)
-
-            SetTextColour(255, 0, 0, 255)
-            BeginTextCommandDisplayText("STRING")
-            AddTextComponentSubstringPlayerName("M")
-            EndTextCommandDisplayText(cx + 0.024, hT + 0.012)
-
-            DrawRect(cx, hT + 0.048, 0.075, 0.02, 255, 255, 255, 255)
-            SetTextScale(0.0, 0.3)
-            SetTextColour(0, 0, 0, 255)
-            SetTextCentre(true)
-            BeginTextCommandDisplayText("STRING")
-            AddTextComponentSubstringPlayerName("Scandlas")
-            EndTextCommandDisplayText(cx, hT + 0.048)
-
-            for i = 1, #tabs do
-                local tx = cx - mW/2 + tW * (i - 1) + tW/2
-                DrawRect(tx, tY, tW, tH, 248, 248, 248, 255)
-                SetTextFont(0)
-                SetTextScale(0.0, 0.26)
-                SetTextColour(40, 40, 40, 255)
-                SetTextCentre(true)
-                BeginTextCommandDisplayText("STRING")
-                AddTextComponentSubstringPlayerName(tabs[i])
-                EndTextCommandDisplayText(tx, tY - 0.003)
-                if i == tab then
-                    DrawRect(tx, tY + tH/2 - 0.002, tW - 0.008, 0.004, 0, 0, 0, 255)
-                end
-            end
-
-            local oy1 = cTop + 0.03
-            local tgX = cx - mW/2 + 0.055
-            local txtX = cx + mW/2 - 0.04
-
-            SetTextFont(0)
-            SetTextScale(0.0, 0.32)
-            SetTextColour(0, 0, 0, 255)
-            SetTextCentre(true)
-            BeginTextCommandDisplayText("STRING")
-            AddTextComponentSubstringPlayerName("تدمير")
-            EndTextCommandDisplayText(txtX, oy1)
-
-            if toggles[1] then
-                DrawRect(tgX, oy1 + 0.008, 0.03, 0.016, 0, 180, 0, 255)
-                DrawRect(tgX + 0.01, oy1 + 0.008, 0.014, 0.02, 255, 255, 255, 255)
-            else
-                DrawRect(tgX, oy1 + 0.008, 0.03, 0.016, 160, 160, 160, 255)
-                DrawRect(tgX - 0.01, oy1 + 0.008, 0.014, 0.02, 210, 210, 210, 255)
-            end
-
-            local oy2 = oy1 + 0.045
-
-            SetTextFont(0)
-            SetTextScale(0.0, 0.32)
-            SetTextColour(0, 0, 0, 255)
-            SetTextCentre(true)
-            BeginTextCommandDisplayText("STRING")
-            AddTextComponentSubstringPlayerName("تدمير 2")
-            EndTextCommandDisplayText(txtX, oy2)
-
-            if toggles[2] then
-                DrawRect(tgX, oy2 + 0.008, 0.03, 0.016, 0, 180, 0, 255)
-                DrawRect(tgX + 0.01, oy2 + 0.008, 0.014, 0.02, 255, 255, 255, 255)
-            else
-                DrawRect(tgX, oy2 + 0.008, 0.03, 0.016, 160, 160, 160, 255)
-                DrawRect(tgX - 0.01, oy2 + 0.008, 0.014, 0.02, 210, 210, 210, 255)
-            end
-
-            DrawRect(cx, fY, mW, fH, 230, 230, 230, 255)
-
-            SetTextFont(0)
-            SetTextScale(0.0, 0.2)
-            SetTextColour(0, 0, 0, 180)
-            SetTextCentre(false)
-            BeginTextCommandDisplayText("STRING")
-            AddTextComponentSubstringPlayerName("(1/2)")
-            EndTextCommandDisplayText(cx - mW/2 + 0.018, fY - 0.003)
-
-            SetTextCentre(true)
-            BeginTextCommandDisplayText("STRING")
-            AddTextComponentSubstringPlayerName("FiveM Scandlas v1.0 | Discord.gg/pk8av1eUAS")
-            EndTextCommandDisplayText(cx + mW/2 - 0.018, fY - 0.003)
-
-            if IsControlJustPressed(0, 172) then sel = math.max(0, sel - 1); Citizen.Wait(180) end
-            if IsControlJustPressed(0, 173) then sel = math.min(1, sel + 1); Citizen.Wait(180) end
-            if IsControlJustPressed(0, 174) then tab = math.max(1, tab - 1); Citizen.Wait(180) end
-            if IsControlJustPressed(0, 175) then tab = math.min(#tabs, tab + 1); Citizen.Wait(180) end
-            if IsControlJustPressed(0, 191) then toggles[sel + 1] = not toggles[sel + 1]; Citizen.Wait(180) end
-
-            local mx = GetControlNormal(0, 239)
-            local my = GetControlNormal(0, 240)
-            if IsControlJustPressed(0, 237) and mx > 0 and my > 0 then
-                for i = 1, #tabs do
-                    local tx = cx - mW/2 + tW * (i - 1) + tW/2
-                    if mx > tx - tW/2 and mx < tx + tW/2 and my > tY - tH/2 and my < tY + tH/2 then
-                        tab = i; Citizen.Wait(180); break
+            local tabWidth = menuWidth / #tabs
+            local startTabX = menuX - (menuWidth / 2) + (tabWidth / 2)
+            local tabsY = menuY + 0.055
+            
+            for i, tabTitle in ipairs(tabs) do
+                local currentTabX = startTabX + ((i - 1) * tabWidth)
+                
+                if IsMouseInBounds(currentTabX, tabsY, tabWidth, 0.03, mouseX, mouseY) then
+                    if leftClick then
+                        currentTab = i
+                        currentOption = 1
                     end
                 end
-                if mx > tgX - 0.015 and mx < tgX + 0.015 and my > oy1 + 0.008 - 0.01 and my < oy1 + 0.008 + 0.01 then
-                    toggles[1] = not toggles[1]; Citizen.Wait(180)
-                end
-                if mx > tgX - 0.015 and mx < tgX + 0.015 and my > oy2 + 0.008 - 0.01 and my < oy2 + 0.008 + 0.01 then
-                    toggles[2] = not toggles[2]; Citizen.Wait(180)
+
+                if i == currentTab then
+                    DrawMenuText(tabTitle, currentTabX, tabsY - 0.01, 0.32, 4, 0, 174, 239, 255, true)
+                    DrawMenuRect(currentTabX, menuY + 0.072, tabWidth - 0.005, 0.003, 0, 174, 239, 255)
+                else
+                    DrawMenuText(tabTitle, currentTabX, tabsY - 0.01, 0.30, 4, 150, 150, 150, 255, true)
                 end
             end
+
+            local currentOptions = options[currentTab] or {}
+            local optionHeight = 0.038
+            local contentHeight = #currentOptions * optionHeight
+            local contentY = menuY + 0.075 + (contentHeight / 2)
+
+            DrawMenuRect(menuX, contentY, menuWidth, contentHeight, 245, 245, 245, 255)
+
+            for i, opt in ipairs(currentOptions) do
+                local rowY = menuY + 0.075 + ((i - 1) * optionHeight) + (optionHeight / 2)
+                local optTextX = menuX - (menuWidth / 2) + 0.01
+                local toggleX = menuX + (menuWidth / 2) - 0.02
+
+                if IsMouseInBounds(menuX, rowY, menuWidth, optionHeight, mouseX, mouseY) then
+                    currentOption = i
+                    if leftClick then
+                        HandleAction(opt)
+                    end
+                end
+
+                if i == currentOption then
+                    DrawMenuRect(menuX, rowY, menuWidth, optionHeight, 0, 174, 239, 40)
+                    DrawMenuText(opt, optTextX, rowY - 0.012, 0.32, 4, 0, 174, 239, 255, false)
+                else
+                    DrawMenuText(opt, optTextX, rowY - 0.012, 0.32, 4, 40, 40, 40, 255, false)
+                end
+
+                if toggles[opt] ~= nil then
+                    if toggles[opt] then
+                        DrawMenuRect(toggleX, rowY, 0.015, 0.015, 0, 174, 239, 255)
+                    else
+                        DrawMenuRect(toggleX, rowY, 0.015, 0.015, 180, 180, 180, 255)
+                    end
+                end
+            end
+
+            local footerY = menuY + 0.075 + contentHeight + 0.015
+            DrawMenuRect(menuX, footerY, menuWidth, 0.03, 255, 255, 255, 255)
+            DrawMenuRect(menuX, footerY - 0.015, menuWidth, 0.001, 220, 220, 220, 255)
+            
+            DrawMenuText("(1/2)", menuX - (menuWidth / 2) + 0.01, footerY - 0.01, 0.28, 4, 120, 120, 120, 255, false)
+            DrawMenuText("Discord.gg/pk8av1eUAS", menuX + (menuWidth / 2) - 0.12, footerY - 0.01, 0.25, 4, 0, 174, 239, 255, false)
         end
     end
 end)
