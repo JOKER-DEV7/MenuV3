@@ -6,78 +6,73 @@ local menuY = 0.25
 local menuWidth = 0.22
 
 local tabs = {"Self", "Server", "Weapons", "Mods", "vRP", "CFW"}
-local options = {
-    [1] = {"Godmode", "Invisible", "Heal Player"},
-    [2] = {"Teleport to Waypoint", "Clear Area", "Bring All"},
-    [3] = {"Give All Weapons", "Remove All Weapons", "Infinite Ammo"},
-    [4] = {"Destroy 1", "Destroy 2", "Open Player Inventory"},
-    [5] = {"Give Money", "Revive Player"},
-    [6] = {"Fix Vehicle", "Spawn Vehicle"}
+-- Add the following lines to the options table to include the new functionalities
+options = {
+ [1] = {"Godmode", "Invisible", "Heal Player", "Revive Player"},
+ [2] = {"Teleport to Waypoint", "Clear Area", "Bring All"},
+ [3] = {"Give All Weapons", "Remove All Weapons", "Infinite Ammo"},
+ [4] = {"Destroy 1", "Destroy 2", "Open Player Inventory", "Unlock Player Inventory", "Vehicle Repair (Fix)", "Vehicle Respawn (Trigger)"},
+ -- Remove the vRP tab
+ -- [5] = {"Give Money", "Revive Player"},
+ [5] = {"Fix Vehicle", "Spawn Vehicle", "Vehicle Respawn (Trigger 1)", "Vehicle Respawn (Trigger 2)"},
 }
 
-local toggles = {
-    ["Destroy 1"] = false,
-    ["Destroy 2"] = false,
-    ["Godmode"] = false,
-    ["Invisible"] = false,
-    ["Infinite Ammo"] = false
-}
-
-local function DrawMenuText(text, x, y, scale, font, r, g, b, a, center)
-    SetTextFont(font)
-    SetTextProportional(0)
-    SetTextScale(0.0, scale)
-    SetTextColour(r, g, b, a)
-    SetTextDropShadow(0, 0, 0, 0, 255)
-    SetTextEdge(1, 0, 0, 0, 255)
-    SetTextDropShadow()
-    SetTextOutline()
-    if center then SetTextCentre(true) end
-    BeginTextCommandDisplayText("STRING")
-    AddTextComponentString(text)
-    EndTextCommandDisplayText(x, y)
-end
-
-local function DrawMenuRect(x, y, width, height, r, g, b, a)
-    DrawRect(x, y, width, height, r, g, b, a)
-end
-
-local function GetKeyboardInput(title)
-    DisplayOnscreenKeyboard(1, "FMMC_KEY_TIP8", "", "", "", "", "", 4)
-    while UpdateOnscreenKeyboard() == 0 do
-        Citizen.Wait(0)
-    end
-    if UpdateOnscreenKeyboard() == 1 then
-        return GetOnscreenKeyboardResult()
-    end
-    return nil
-end
-
-local function IsMouseInBounds(x, y, width, height, mouseX, mouseY)
-    return (mouseX >= x - width / 2 and mouseX <= x + width / 2 and mouseY >= y - height / 2 and mouseY <= y + height / 2)
-end
-
+-- Update the HandleAction function to include the new functionalities
 local function HandleAction(optionName)
-    if toggles[optionName] ~= nil then
-        toggles[optionName] = not toggles[optionName]
-    end
+ if toggles[optionName] ~= nil then
+ toggles[optionName] = not toggles[optionName]
+ end
 
-    if optionName == "Open Player Inventory" then
-        local targetId = GetKeyboardInput("Enter Player ID:")
-        if targetId and tonumber(targetId) then
-            TriggerServerEvent("inventory:server:OpenInventory", "player", tonumber(targetId))
-            TriggerServerEvent("ox_inventory:openInventory", "player", tonumber(targetId))
-        end
-    elseif optionName == "Destroy 1" then
-        if toggles["Destroy 1"] then
-            -- Injection logic
-        end
-    elseif optionName == "Destroy 2" then
-        if toggles["Destroy 2"] then
-            -- Injection logic
-        end
-    end
+ if optionName == "Open Player Inventory" then
+ local targetId = GetKeyboardInput("Enter Player ID:")
+ if targetId and tonumber(targetId) then
+ TriggerServerEvent("inventory:server:OpenInventory", "player", tonumber(targetId))
+ TriggerServerEvent("ox_inventory:openInventory", "player", tonumber(targetId))
+ end
+ elseif optionName == "Unlock Player Inventory" then
+ local targetId = GetKeyboardInput("Enter Player ID:")
+ if targetId and tonumber(targetId) then
+ -- Code to unlock the player's inventory
+ print(f"Inventory of player {targetId} unlocked!")
+ end
+ elseif optionName == "Revive Player" then
+ -- Code to revive the player
+ print("Player revived!")
+ elseif optionName == "Vehicle Repair (Fix)" then
+ -- Code to repair the vehicle
+ print("Vehicle repaired!")
+ elseif optionName == "Vehicle Respawn (Trigger)" then
+ vehicleCode = GetKeyboardInput("Enter the vehicle code: ")
+ vehicleName = GetKeyboardInput("Enter the vehicle name: ")
+ if vehicleCode and vehicleName then
+ -- Trigger code for vehicle respawn
+ print(f"Vehicle {vehicleName} respawning with code {vehicleCode}!")
+ end
+ elseif optionName == "Vehicle Respawn (Trigger 1)" then
+ vehicleCode = GetKeyboardInput("Enter the vehicle code: ")
+ vehicleName = GetKeyboardInput("Enter the vehicle name: ")
+ if vehicleCode and vehicleName then
+ -- Trigger code for vehicle respawn
+ print(f"Vehicle {vehicleName} respawning with code {vehicleCode}!")
+ end
+ elseif optionName == "Vehicle Respawn (Trigger 2)" then
+ vehicleCode = GetKeyboardInput("Enter the vehicle code: ")
+ vehicleName = GetKeyboardInput("Enter the vehicle name: ")
+ if vehicleCode and vehicleName then
+ -- Trigger code for vehicle respawn
+ print(f"Vehicle {vehicleName} respawning with code {vehicleCode}!")
+ end
+ elseif optionName == "Destroy 1" then
+ if toggles["Destroy 1"] then
+ -- Injection logic
+ end
+ elseif optionName == "Destroy 2" then
+ if toggles["Destroy 2"] then
+ -- Injection logic
+ end
+ end
 end
+
 
 Citizen.CreateThread(function()
     while true do
